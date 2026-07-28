@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_form_sfa_identity" model="ir.ui.view">
+        <field name="name">hr.employee.form.sfa.identity</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_sfa_orders" type="object"
+                        class="oe_stat_button" icon="fa-shopping-cart">
+                    <field name="sfa_order_count" widget="statinfo" string="Orders"/>
+                </button>
+                <button name="action_view_sfa_deliveries" type="object"
+                        class="oe_stat_button" icon="fa-truck">
+                    <field name="sfa_delivery_count" widget="statinfo" string="Deliveries"/>
+                </button>
+                <button name="action_view_sfa_invoices" type="object"
+                        class="oe_stat_button" icon="fa-file-text-o">
+                    <field name="sfa_invoice_count" widget="statinfo" string="Invoices"/>
+                </button>
+                <button name="action_view_sfa_payments" type="object"
+                        class="oe_stat_button" icon="fa-money">
+                    <field name="sfa_payment_count" widget="statinfo" string="Collections"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>
