@@ -4,7 +4,7 @@
                "attendance check-in and the OHINT mobile app. Employees set to "
                "'Company Site' can only check in/out within an assigned site's "
                "radius.",
-    "version": "19.0.1.0.0",
+    "version": "18.0.1.0.0",
     "license": "LGPL-3",
     "author": "N2D",
     "category": "Human Resources",

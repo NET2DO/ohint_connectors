@@ -4,7 +4,7 @@
                "A standalone visit (no open attendance punch required) that "
                "records the salesperson's check-in geolocation and verifies "
                "it falls within a configurable radius of the customer.",
-    "version": "19.0.1.2.0",
+    "version": "18.0.1.2.0",
     "license": "LGPL-3",
     "author": "N2D",
     "category": "Sales",

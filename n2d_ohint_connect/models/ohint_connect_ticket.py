@@ -20,12 +20,9 @@ class OhintConnectTicket(models.Model):
     operator = fields.Char(string="OHINT operator", help="Operator the middleware named in the ticket.")
     remote_addr = fields.Char(string="Remote address")
 
-    # Odoo 19 declarative constraint. The older `_sql_constraints` list is gone
-    # in this version and is silently ignored — which would leave single-use
-    # unenforced while every other check still appeared to pass.
-    _jti_uniq = models.Constraint(
-        "UNIQUE (jti)", "This Connect ticket has already been used."
-    )
+    _sql_constraints = [
+        ("jti_uniq", "unique(jti)", "This Connect ticket has already been used."),
+    ]
 
     @api.autovacuum
     def _gc_tickets(self):
