@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_company_location_user,company.location.user,model_company_location,base.group_user,1,0,0,0
+access_company_location_manager,company.location.manager,model_company_location,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_employee_visit_user,employee.visit.user,model_employee_visit,base.group_user,1,0,0,0
+access_employee_visit_manager,employee.visit.manager,model_employee_visit,hr_attendance.group_hr_attendance_manager,1,1,1,1

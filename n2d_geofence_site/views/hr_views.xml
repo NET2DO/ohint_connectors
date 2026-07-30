@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Employee: expose tracking configuration -->
+    <record id="view_employee_form_geofence" model="ir.ui.view">
+        <field name="name">hr.employee.form.geofence.n2d</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="traceable"/>
+                <field name="traceable_type"
+                       attrs="{'invisible': [('traceable', '=', False)]}"/>
+                <field name="site_ids"
+                       widget="many2many_tags"
+                       attrs="{'invisible': ['|', ('traceable', '=', False), ('traceable_type', '!=', 'Company Site')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Attendance form: site, map links and GPS visits -->
+    <record id="view_attendance_form_geofence" model="ir.ui.view">
+        <field name="name">hr.attendance.form.geofence.n2d</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='check_out']" position="after">
+                <field name="site_id"/>
+                <field name="check_in_map" widget="url" readonly="1"/>
+                <field name="check_out_map" widget="url" readonly="1"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Visits" name="visits">
+                        <field name="visit_ids" readonly="1">
+                            <tree string="Visits">
+                                <field name="check_in"/>
+                                <field name="check_in_latitude"/>
+                                <field name="check_in_longitude"/>
+                                <field name="check_in_map" widget="url"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Attendance tree: show the site -->
+    <record id="view_attendance_tree_geofence" model="ir.ui.view">
+        <field name="name">hr.attendance.tree.geofence.n2d</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='worked_hours']" position="after">
+                <field name="site_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Standalone Visits views -->
+    <record id="view_employee_visit_tree" model="ir.ui.view">
+        <field name="name">employee.visit.tree.n2d</field>
+        <field name="model">employee.visit</field>
+        <field name="arch" type="xml">
+            <tree string="Visits">
+                <field name="employee_id"/>
+                <field name="check_in"/>
+                <field name="check_in_latitude"/>
+                <field name="check_in_longitude"/>
+                <field name="check_in_map" widget="url"/>
+                <field name="attend_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_employee_visit_form" model="ir.ui.view">
+        <field name="name">employee.visit.form.n2d</field>
+        <field name="model">employee.visit</field>
+        <field name="arch" type="xml">
+            <form string="Visit">
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="attend_id"/>
+                        <field name="check_in"/>
+                    </group>
+                    <group string="Location">
+                        <field name="check_in_latitude"/>
+                        <field name="check_in_longitude"/>
+                        <field name="check_in_map" widget="url"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_employee_visit" model="ir.actions.act_window">
+        <field name="name">Visits</field>
+        <field name="res_model">employee.visit</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_employee_visits"
+              name="Visits"
+              parent="menu_geofence_root"
+              action="action_employee_visit"
+              sequence="20"/>
+
+</odoo>
