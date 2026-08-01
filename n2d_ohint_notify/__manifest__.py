@@ -6,7 +6,7 @@
                "assignment/profile changes, and back-office attendance "
                "corrections are HMAC-signed and POSTed to /webhooks/odoo/notify "
                "after the transaction commits.",
-    "version": "19.0.1.0.0",
+    "version": "15.0.1.0.0",
     "license": "LGPL-3",
     "author": "N2D",
     "category": "Human Resources",

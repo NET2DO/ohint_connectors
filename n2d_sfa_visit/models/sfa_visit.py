@@ -232,7 +232,7 @@ class HrEmployee(models.Model):
             "type": "ir.actions.act_window",
             "name": "Field Visits",
             "res_model": "sfa.visit",
-            "view_mode": "list,form",
+            "view_mode": "tree,form",
             "domain": [("salesperson_employee_id", "=", self.id)],
             "context": {"default_salesperson_employee_id": self.id},
         }

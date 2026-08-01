@@ -4,14 +4,14 @@
     <record id="view_company_location_tree" model="ir.ui.view">
         <field name="name">company.location.tree</field>
         <field name="model">company.location</field>
-        <field name="type">list</field>
+        <field name="type">tree</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="latitude"/>
                 <field name="longitude"/>
                 <field name="radius"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -39,13 +39,11 @@
         <field name="inherit_id" ref="base.view_company_form"/>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <div name="button_box" position="after">
-                <notebook>
-                    <page string="Locations">
-                        <field name="location_ids"/>
-                    </page>
-                </notebook>
-            </div>
+            <xpath expr="//notebook" position="inside">
+                <page string="Locations">
+                    <field name="location_ids"/>
+                </page>
+            </xpath>
         </field>
     </record>
 </odoo>

@@ -6,7 +6,7 @@
     "summary": """
         With this module the geolocation of the user is tracked at the
         check-in/check-out step""",
-    "version": "1.0",
+    "version": "15.0.1.0.0",
     "license": "AGPL-3",
     "author": "ForgeFlow S.L., Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/hr",
@@ -14,19 +14,16 @@
     "installable": True,
     "auto_install": True,
     "data": [
-        "views/hr_attendance_views.xml",
         "data/location_data.xml",
         "security/ir.model.access.csv",
+        "views/hr_attendance_views.xml",
         "views/res_company.xml",
         "views/employee_visits.xml",
-        "views/attendance_gantt_view.xml",  # Added new view for gantt replacement
+        "views/attendance_gantt_view.xml",
     ],
-# NOTE: the v16 web-UI geolocation patch (static/src/js/attendance_geolocation.js)
-# imports @hr_attendance/js/my_attendances and @hr_attendance/js/kiosk_confirm,
-# which DO NOT EXIST in Odoo 19 (the attendance frontend was rewritten as OWL
-# components: components/check_in_out, public_kiosk, ...). Loading it leaves two
-# JS modules undefined and breaks the whole web.assets_web bundle. Disabled until
-# the patch is re-implemented for v19. The model/data (company.location geofence
-# sites, attendance site_id, employee site field) are unaffected.
-    'assets': {},
+    "assets": {
+        "web.assets_backend": [
+            "hr_attendance_geolocation/static/src/js/attendance_geolocation.js",
+        ],
+    },
 }

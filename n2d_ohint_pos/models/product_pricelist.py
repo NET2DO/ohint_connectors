@@ -1,4 +1,4 @@
-from odoo import api, models
+from odoo import models
 
 
 class ProductPricelist(models.Model):
@@ -10,13 +10,6 @@ class ProductPricelist(models.Model):
             self.env["ohint.pos.catalog"]._mark_dirty("product.pricelist", self.ids)
         return res
 
-    # @api.model_create_multi must be re-declared on the override — without
-    # it, an external XML-RPC create() call with a single (non-list) vals
-    # dict breaks with "create() missing 1 required positional argument:
-    # 'vals_list'" even though it works fine via direct ORM access. Caught
-    # live on res.partner's identical override; applied here too since the
-    # risk is the same.
-    @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         if records:
@@ -41,7 +34,6 @@ class ProductPricelistItem(models.Model):
             self.env["ohint.pos.catalog"]._mark_dirty("product.pricelist", ids)
         return res
 
-    @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         ids = records.mapped("pricelist_id").ids

@@ -74,18 +74,20 @@ class OhintConnect(http.Controller):
             )
             return self._refuse("This sign-in link has already been used.")
 
-        # Establish the session without a password. finalize() is Odoo's own
-        # post-MFA path: it stamps db/login/uid/context and the session token.
+        # Establish the session without a password (Odoo 15 approach).
         request.session.logout(keep_db=True)
-        request.session["pre_login"] = user.login
-        request.session["pre_uid"] = user.id
-        request.session.finalize(request.env)
+        request.session.uid = user.id
+        request.session.login = user.login
+        request.session.db = request.db
+        request.session.context = dict(
+            request.env(user=user.id)["res.users"].context_get()
+        )
 
         _logger.info(
             "OHINT Connect OK db=%s user=%s(%s) operator=%s remote=%s",
             request.db, user.login, user.id, operator, remote,
         )
-        return request.redirect("/odoo")
+        return request.redirect("/web")
 
     def _refuse(self, message):
         """Plain 403.
@@ -105,11 +107,12 @@ class OhintConnect(http.Controller):
             "and for a short time. Generate a new one from the OHINT console.</p>"
             "</body></html>"
         )
-        return request.make_response(
+        response = request.make_response(
             html,
-            status=403,
             headers=[("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "no-store")],
         )
+        response.status_code = 403
+        return response
 
     def _verify(self, token):
         """Return (uid, operator, jti) or raise _TicketError."""

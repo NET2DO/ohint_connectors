@@ -6,7 +6,7 @@
         <field name="name">sfa.visit.list</field>
         <field name="model">sfa.visit</field>
         <field name="arch" type="xml">
-            <list string="Field Visits"
+            <tree string="Field Visits"
                   decoration-success="within_geofence"
                   decoration-warning="not within_geofence">
                 <field name="check_in"/>
@@ -23,7 +23,7 @@
                        decoration-info="state == 'open'"
                        decoration-success="state == 'done'"/>
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -48,12 +48,12 @@
 
                     <!-- Geofence verdict badge (computed server-side) -->
                     <div class="oe_button_box" name="geofence_box">
-                        <span class="badge text-bg-success fs-6"
-                              invisible="not within_geofence">
+                        <span class="badge badge-success"
+                              attrs="{'invisible': [('within_geofence', '=', False)]}">
                             On-site ✓ (within geofence)
                         </span>
-                        <span class="badge text-bg-warning fs-6"
-                              invisible="within_geofence">
+                        <span class="badge badge-warning"
+                              attrs="{'invisible': [('within_geofence', '=', True)]}">
                             Outside geofence ⚠
                         </span>
                     </div>
@@ -191,10 +191,10 @@
     <record id="sfa_visit_action" model="ir.actions.act_window">
         <field name="name">Field Visits</field>
         <field name="res_model">sfa.visit</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="sfa_visit_view_search"/>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Log your first field visit</p>
+            <p class="o_view_nocontent_create">Log your first field visit</p>
             <p>Record a customer visit. The check-in location is matched against
                the customer's geolocation to prove you were on-site.</p>
         </field>
@@ -203,10 +203,10 @@
     <record id="sfa_visit_report_action" model="ir.actions.act_window">
         <field name="name">Visits Analysis</field>
         <field name="res_model">sfa.visit</field>
-        <field name="view_mode">pivot,graph,list</field>
+        <field name="view_mode">pivot,graph,tree</field>
         <field name="search_view_id" ref="sfa_visit_view_search"/>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">No visits to analyse yet</p>
+            <p class="o_view_nocontent_create">No visits to analyse yet</p>
             <p>Pivot / graph of visits by salesperson, customer and geofence
                compliance.</p>
         </field>

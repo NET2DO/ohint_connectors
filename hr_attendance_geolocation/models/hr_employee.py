@@ -33,9 +33,9 @@ class HrEmployee(models.Model):
         ).attendance_manual(next_action, entered_pin)
         return res
 
-    def _attendance_action_change(self, geo_information=None):
+    def _attendance_action_change(self):
         """Override to include geolocation data when employees check in/out."""
-        res = super()._attendance_action_change(geo_information=geo_information)
+        res = super()._attendance_action_change()
         location = self.env.context.get("attendance_location", False)
         if location:
             if self.attendance_state == "checked_in":

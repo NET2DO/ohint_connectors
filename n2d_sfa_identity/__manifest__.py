@@ -5,7 +5,7 @@
                "salesperson_employee_id on sale.order / stock.picking / account.move / "
                "account.payment, propagates it order->picking->invoice->payment, and adds "
                "employee Orders/Deliveries/Invoices/Collections smart buttons.",
-    "version": "19.0.1.1.0",
+    "version": "15.0.1.1.0",
     "license": "LGPL-3",
     "author": "N2D",
     "category": "Sales",

@@ -1,162 +1,126 @@
-/** @odoo-module **/
+odoo.define('hr_attendance_geolocation.attendance_geolocation', function (require) {
+    'use strict';
 
-import { _t } from '@web/core/l10n/translation';
-import { patch } from '@web/core/utils/patch';
-import { MyAttendances } from '@hr_attendance/js/my_attendances';
-import { KioskConfirm } from '@hr_attendance/js/kiosk_confirm';
+    var MyAttendances = require('hr_attendance.my_attendances');
+    var KioskConfirm = require('hr_attendance.kiosk_confirm');
+    var core = require('web.core');
+    var _t = core._t;
 
-patch(MyAttendances.prototype, {
-    setup() {
-        this._super(...arguments);
-        this.location = [null, null];
-        this.errorCode = null;
-    },
-    
-    update_attendance() {
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 60000,
-        };
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                this._manual_attendance.bind(this),
-                this._getPositionError.bind(this),
-                options
-            );
-        }
-    },
-    
-    async _manual_attendance(position) {
-        try {
-            const result = await this.env.services.orm.call(
-                'hr.employee',
-                'attendance_manual',
-                [[this.employee.id],
-                'hr_attendance.hr_attendance_action_my_attendances',
-                null,
-                [position.coords.latitude, position.coords.longitude]]
-            );
-            
-            if (result.action) {
-                await this.env.services.action.doAction(result.action);
-            } else if (result.warning) {
-                this.env.services.notification.add(result.warning, {
-                    type: 'warning',
-                });
+    MyAttendances.include({
+        update_attendance: function () {
+            var self = this;
+            var options = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 60000,
+            };
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) { self._geo_manual_attendance(position); },
+                    function (error) { self._geo_position_error(error); },
+                    options
+                );
+            } else {
+                this._super();
             }
-        } catch (error) {
-            this.env.services.notification.add(_t('An error occurred'), {
-                type: 'danger',
-            });
-            console.error(error);
-        }
-    },
-    
-    _getPositionError(error) {
-        console.warn("ERROR(" + error.code + "): " + error.message);
-        const position = {
-            coords: {
-                latitude: 0.0,
-                longitude: 0.0,
-            },
-        };
-        this._manual_attendance(position);
-    },
-});
+        },
 
-patch(KioskConfirm.prototype, {
-    setup() {
-        this._super(...arguments);
-        this.pin_pad = false;
-    },
-    
-    onClickSignInOut() {
-        this.update_attendance();
-    },
-    
-    onClickPINpadButton() {
-        this.pin_pad = true;
-        this.update_attendance();
-    },
-    
-    update_attendance() {
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0,
-        };
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                this._manual_attendance.bind(this),
-                this._getPositionError.bind(this),
-                options
-            );
-        }
-    },
-    
-    async _manual_attendance(position) {
-        let pinBoxVal = null;
-        if (this.pin_pad) {
-            const pinPadButton = document.querySelector(".o_hr_attendance_pin_pad_button_ok");
-            if (pinPadButton) {
-                pinPadButton.setAttribute("disabled", "disabled");
-            }
-            const pinBox = document.querySelector(".o_hr_attendance_PINbox");
-            if (pinBox) {
-                pinBoxVal = pinBox.value;
-            }
-        }
-        
-        try {
-            const result = await this.env.services.orm.call(
-                'hr.employee',
-                'attendance_manual',
-                [[this.employee_id],
-                this.next_action,
-                pinBoxVal,
-                [position.coords.latitude, position.coords.longitude]]
-            );
-            
-            if (result.action) {
-                await this.env.services.action.doAction(result.action);
-            } else if (result.warning) {
-                this.env.services.notification.add(result.warning, {
-                    type: 'warning',
-                });
-                
-                if (this.pin_pad) {
-                    const pinBox = document.querySelector(".o_hr_attendance_PINbox");
-                    if (pinBox) {
-                        pinBox.value = "";
-                    }
-                    
-                    setTimeout(() => {
-                        const pinPadButton = document.querySelector(".o_hr_attendance_pin_pad_button_ok");
-                        if (pinPadButton) {
-                            pinPadButton.removeAttribute("disabled");
-                        }
-                    }, 500);
+        _geo_manual_attendance: function (position) {
+            var self = this;
+            return this._rpc({
+                model: 'hr.employee',
+                method: 'attendance_manual',
+                args: [
+                    [this.employee.id],
+                    'hr_attendance.hr_attendance_action_my_attendances',
+                    null,
+                    [position.coords.latitude, position.coords.longitude],
+                ],
+            }).then(function (result) {
+                if (result.action) {
+                    self.do_action(result.action);
+                } else if (result.warning) {
+                    self.displayNotification({
+                        message: result.warning,
+                        type: 'warning',
+                    });
                 }
-                this.pin_pad = false;
-            }
-        } catch (error) {
-            this.env.services.notification.add(_t('An error occurred'), {
-                type: 'danger',
+            }).guardedCatch(function () {
+                self.displayNotification({
+                    message: _t('An error occurred'),
+                    type: 'danger',
+                });
             });
-            console.error(error);
-        }
-    },
-    
-    _getPositionError(error) {
-        console.warn("ERROR(" + error.code + "): " + error.message);
-        const position = {
-            coords: {
-                latitude: 0.0,
-                longitude: 0.0,
-            },
-        };
-        this._manual_attendance(position);
-    },
+        },
+
+        _geo_position_error: function (error) {
+            console.warn('ERROR(' + error.code + '): ' + error.message);
+            var position = { coords: { latitude: 0.0, longitude: 0.0 } };
+            this._geo_manual_attendance(position);
+        },
+    });
+
+    KioskConfirm.include({
+        start: function () {
+            this._geo_pin_pad = false;
+            return this._super.apply(this, arguments);
+        },
+
+        _signInOut: function () {
+            this._geo_update_attendance();
+        },
+
+        _geo_update_attendance: function () {
+            var self = this;
+            var options = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0,
+            };
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) { self._geo_kiosk_attendance(position); },
+                    function (error) { self._geo_kiosk_position_error(error); },
+                    options
+                );
+            }
+        },
+
+        _geo_kiosk_attendance: function (position) {
+            var self = this;
+            return this._rpc({
+                model: 'hr.employee',
+                method: 'attendance_manual',
+                args: [
+                    [this.employee_id],
+                    this.next_action,
+                    null,
+                    [position.coords.latitude, position.coords.longitude],
+                ],
+            }).then(function (result) {
+                if (result.action) {
+                    self.do_action(result.action);
+                } else if (result.warning) {
+                    self.displayNotification({
+                        message: result.warning,
+                        type: 'warning',
+                    });
+                }
+            }).guardedCatch(function () {
+                self.displayNotification({
+                    message: _t('An error occurred'),
+                    type: 'danger',
+                });
+            });
+        },
+
+        _geo_kiosk_position_error: function (error) {
+            console.warn('ERROR(' + error.code + '): ' + error.message);
+            var position = { coords: { latitude: 0.0, longitude: 0.0 } };
+            this._geo_kiosk_attendance(position);
+        },
+    });
+
+    return {};
 });
 

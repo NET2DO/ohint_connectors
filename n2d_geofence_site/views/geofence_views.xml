@@ -5,13 +5,13 @@
         <field name="name">company.location.list.n2d</field>
         <field name="model">company.location</field>
         <field name="arch" type="xml">
-            <list string="Geofence Sites" editable="bottom">
+            <tree string="Geofence Sites" editable="bottom">
                 <field name="name"/>
                 <field name="latitude"/>
                 <field name="longitude"/>
                 <field name="radius"/>
                 <field name="company_id"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -38,9 +38,9 @@
     <record id="action_company_location" model="ir.actions.act_window">
         <field name="name">Geofence Sites</field>
         <field name="res_model">company.location</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Create a geofence site</p>
+            <p class="o_view_nocontent_create">Create a geofence site</p>
             <p>Define a circular boundary (latitude, longitude, radius). Assign
                sites to employees and set their Traceable Type to
                "Company Site" so they can only check in/out within the radius.</p>

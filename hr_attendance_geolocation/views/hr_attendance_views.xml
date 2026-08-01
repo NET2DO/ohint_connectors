@@ -29,13 +29,13 @@
                 </group>
                 <group>
                     <field name="visit_ids">
-                        <list editable="bottom">
+                        <tree editable="bottom">
                             <!-- Using datetime field from employee.visit model -->
                             <field name="date" string="Timestamp"/>
                             <field name="check_in_latitude"/>
                             <field name="check_in_longitude"/>
                             <field name="check_in_map" widget="url"/>
-                        </list>
+                        </tree>
                     </field>
                 </group>
             </xpath>
@@ -58,7 +58,7 @@
                 <field name="traceable_type"/>
                 <field name="site_ids"
                        widget="many2many_tags"
-                       invisible="traceable_type != 'Company Site'"/>
+                       attrs="{'invisible': [('traceable_type', '!=', 'Company Site')]}"/>
             </xpath>
 
         </field>
