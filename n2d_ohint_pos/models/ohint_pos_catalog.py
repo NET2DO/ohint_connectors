@@ -37,6 +37,12 @@ class OhintPosCatalog(models.AbstractModel):
     # postcommit callbacks run).
     _DIRTY_KEY = "n2d_ohint_pos.dirty"
 
+    # Stock buffers separately from the catalog: it is keyed by warehouse (a
+    # quantity belongs to one warehouse, unlike catalog rows which are
+    # tenant-wide) and travels as its own `stock.changed` event, so the two
+    # cannot share one buffer. See SPEC-041 Amendment B, D27.
+    _STOCK_DIRTY_KEY = "n2d_ohint_pos.stock_dirty"
+
     @api.model
     def _mark_dirty(self, model_name, ids):
         """Record that `ids` of `model_name` changed in this transaction.
@@ -60,6 +66,47 @@ class OhintPosCatalog(models.AbstractModel):
             postcommit.add(lambda: self._flush(url, secret, tenant_id, buf))
         buf.setdefault(model_name, set()).update(ids)
 
+    @api.model
+    def _mark_stock_dirty(self, warehouse_id, product_tmpl_ids):
+        """Record that `product_tmpl_ids` changed quantity in `warehouse_id`.
+
+        Product template ids (not variant ids) are reported deliberately: the
+        catalog the branch already holds is keyed on product.template, so
+        quantities must arrive in the same id space to be joinable client-side.
+        Buffers and flushes exactly like _mark_dirty, on its own key.
+        """
+        if not (warehouse_id and product_tmpl_ids):
+            return
+        url, secret, tenant_id = self.env["ohint.notify"]._config()
+        if not (url and secret and tenant_id):
+            return  # not configured -> stock sync disabled
+
+        postcommit = self.env.cr.postcommit
+        first_call = self._STOCK_DIRTY_KEY not in postcommit.data
+        buf = postcommit.data.setdefault(self._STOCK_DIRTY_KEY, {})
+        if first_call:
+            postcommit.add(lambda: self._flush_stock(url, secret, tenant_id, buf))
+        buf.setdefault(warehouse_id, set()).update(product_tmpl_ids)
+
+    @staticmethod
+    def _flush_stock(url, secret, tenant_id, buf):
+        warehouses = {
+            str(wh_id): sorted(ids) for wh_id, ids in buf.items() if ids
+        }
+        if not warehouses:
+            return
+        # JSON object keys must be strings; the middleware parses them back to
+        # int64 warehouse ids when resolving which branch(es) to mark dirty.
+        OhintPosCatalog._post(
+            url,
+            secret,
+            {
+                "tenant_id": tenant_id,
+                "event": "stock.changed",
+                "warehouses": warehouses,
+            },
+        )
+
     @staticmethod
     def _flush(url, secret, tenant_id, buf):
         models_payload = {model: sorted(ids) for model, ids in buf.items() if ids}
@@ -70,6 +117,10 @@ class OhintPosCatalog(models.AbstractModel):
             "event": "catalog.changed",
             "models": models_payload,
         }
+        OhintPosCatalog._post(url, secret, body)
+
+    @staticmethod
+    def _post(url, secret, body):
         try:
             payload = json.dumps(body, separators=(",", ":"))
             timestamp = str(int(time.time()))
