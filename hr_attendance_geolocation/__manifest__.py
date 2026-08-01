@@ -21,12 +21,12 @@
         "views/employee_visits.xml",
         "views/attendance_gantt_view.xml",  # Added new view for gantt replacement
     ],
-# Completely removed all asset declarations to prevent loading of problematic files
-    'assets': {
-        'web.assets_backend': [
-            "hr_attendance_geolocation/static/src/js/attendance_geolocation.js",
-        ],
-    },
-    # Add a flag to indicate this module has been fixed
-    'hr_attendance_geolocation_fix': True
+# NOTE: the v16 web-UI geolocation patch (static/src/js/attendance_geolocation.js)
+# imports @hr_attendance/js/my_attendances and @hr_attendance/js/kiosk_confirm,
+# which DO NOT EXIST in Odoo 19 (the attendance frontend was rewritten as OWL
+# components: components/check_in_out, public_kiosk, ...). Loading it leaves two
+# JS modules undefined and breaks the whole web.assets_web bundle. Disabled until
+# the patch is re-implemented for v19. The model/data (company.location geofence
+# sites, attendance site_id, employee site field) are unaffected.
+    'assets': {},
 }
