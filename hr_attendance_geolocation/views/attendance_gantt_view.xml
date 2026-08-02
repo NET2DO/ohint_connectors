@@ -4,8 +4,8 @@
     <record id="action_hr_attendance_gantt_replacement" model="ir.actions.act_window">
         <field name="name">Attendance Analysis</field>
         <field name="res_model">hr.attendance</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_id" ref="hr_attendance.view_attendance_tree_management"/>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="hr_attendance.view_attendance_tree"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 No attendance records found

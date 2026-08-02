@@ -11,7 +11,7 @@
                "Amendment B: emits event=stock.changed on stock.quant writes so "
                "branches see warehouse on-hand changes, which the catalog path "
                "cannot carry (a quant write never touches product.template).",
-    "version": "19.0.1.3.0",
+    "version": "17.0.1.3.0",
     "license": "LGPL-3",
     "author": "N2D",
     "category": "Point of Sale",
