@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      SPEC-017A-SEC: field reps are NOT Odoo users, so per-rep visibility is
+      enforced in OHINT (by assigned-customer scoping + the role matrix), not by
+      Odoo record rules on user_id. The old user_id/sales_team rules are removed
+      here and deleted from existing databases by the post-migration script
+      (migrations/19.0.1.1.0/post-migration.py). Internal users — including
+      ohint_sales_bot — get CRUD via ir.model.access.csv.
+    -->
+    <data noupdate="1"/>
+</odoo>

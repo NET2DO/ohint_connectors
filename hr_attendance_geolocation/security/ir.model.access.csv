@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_employee_visits,access.employee.visits,model_employee_visit,,1,1,1,1
+access_company_location,access.company.location,model_company_location,,1,1,1,1

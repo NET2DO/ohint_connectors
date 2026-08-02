@@ -1,6 +1,6 @@
 {
     "name": "OHINT Connect (console sign-in)",
-    "version": "19.0.1.0.0",
+    "version": "16.0.1.0.0",
     "summary": "One-click sign-in to this database from the OHINT console (app.ohint.net)",
     "description": """
 OHINT Connect

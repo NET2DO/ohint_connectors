@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Company Location Views -->
+    <record id="view_company_location_tree" model="ir.ui.view">
+        <field name="name">company.location.tree</field>
+        <field name="model">company.location</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="latitude"/>
+                <field name="longitude"/>
+                <field name="radius"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_company_location_form" model="ir.ui.view">
+        <field name="name">company.location.form</field>
+        <field name="model">company.location</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name"/>
+                    <field name="latitude"/>
+                    <field name="longitude"/>
+                    <field name="radius"/>
+                    <field name="company_id"/>
+                </group>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Inherit Company Form -->
+    <record id="res_company_location_form" model="ir.ui.view">
+        <field name="name">res.company.location.form</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <page name="general_info" position="after">
+                <page string="Locations">
+                    <field name="location_ids"/>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>

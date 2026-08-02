@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="hr_attendance_view_form" model="ir.ui.view">
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/group" position="after">
+                <group name="locations" col="2">
+                    <label for="check_in_latitude" string="Check-in Location"/>
+                    <span class="oe_inline">
+                        Latitude:
+                        <field name="check_in_latitude" nolabel="1"/>
+                        <br/>
+                        Longitude:
+                        <field name="check_in_longitude" nolabel="1"/>
+                    </span>
+                    <field name="check_in_map" widget="url"/>
+
+                    <label for="check_out_latitude" string="Check-out Location"/>
+                    <span class="oe_inline">
+                        Latitude:
+                        <field name="check_out_latitude" nolabel="1"/>
+                        <br/>
+                        Longitude:
+                        <field name="check_out_longitude" nolabel="1"/>
+                    </span>
+                    <field name="check_out_map" widget="url"/>
+                </group>
+                <group>
+                    <field name="visit_ids">
+                        <tree editable="bottom">
+                            <!-- Using datetime field from employee.visit model -->
+                            <field name="date" string="Timestamp"/>
+                            <field name="check_in_latitude"/>
+                            <field name="check_in_longitude"/>
+                            <field name="check_in_map" widget="url"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+            <field name="check_out" position="after">
+                <field name="site_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit Form View to Modify it -->
+    <record id="view_employee_form" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="traceable" invisible="1"/>
+                <field name="traceable_type"/>
+                <field name="site_ids"
+                       widget="many2many_tags"
+                       attrs="{'invisible': [('traceable_type', '!=', 'Company Site')]}"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
