@@ -63,6 +63,21 @@ class OhintNotify(models.AbstractModel):
         # Only plain values are captured — safe to run after the cursor closes.
         self.env.cr.postcommit.add(lambda: self._post(url, secret, body))
 
+    @api.model
+    def _dispatch_event(self, body):
+        """POST a top-level ``event`` envelope (e.g. ``payment.received``) to the
+        middleware webhook. Unlike ``_dispatch`` these events aren't addressed to
+        a single hr.employee — the middleware routes them itself (by assigned
+        customer, etc.). Injects tenant_id, signs, and fires post-commit, so a
+        rolled-back change never notifies and the user's action is never blocked.
+        Silently no-ops when the webhook isn't configured. ``body`` must contain
+        only plain JSON values (it is captured for a post-commit callback)."""
+        url, secret, tenant_id = self._config()
+        if not (url and secret and tenant_id):
+            return  # not configured -> notifications disabled
+        payload = dict(body, tenant_id=tenant_id)
+        self.env.cr.postcommit.add(lambda: self._post(url, secret, payload))
+
     @staticmethod
     def _post(url, secret, body):
         try:
