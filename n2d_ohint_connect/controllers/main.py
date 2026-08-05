@@ -66,7 +66,8 @@ class OhintConnect(http.Controller):
                 # The ORM defers the INSERT to the next flush. Without forcing it
                 # here the unique violation would surface after the redirect has
                 # already been handed to the browser — i.e. too late to refuse.
-                request.env.flush_all()
+                # cr.flush() rather than env.flush_all(): the latter is 16.0+.
+                request.env.cr.flush()
         except IntegrityError:
             _logger.warning(
                 "OHINT Connect REPLAY blocked jti=%s db=%s operator=%s remote=%s",
