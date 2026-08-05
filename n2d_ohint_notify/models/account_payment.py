@@ -22,10 +22,14 @@ class AccountPayment(models.Model):
     def _ohint_notify_payment_received(self):
         dispatcher = self.env["ohint.notify"]
         for pay in self:
-            # Only inbound customer payments that actually posted.
+            # Only inbound customer payments that actually posted. NB: on Odoo
+            # 18+/19 `payment.state` is the RECONCILIATION state (in_process /
+            # paid / …), no longer "posted" — the posting signal is the journal
+            # entry's own state. Guard on move_id.state so this fires once the
+            # accounting entry is posted, regardless of reconciliation.
             if pay.payment_type != "inbound" or pay.partner_type != "customer":
                 continue
-            if pay.state != "posted" or not pay.partner_id:
+            if not pay.partner_id or pay.move_id.state != "posted":
                 continue
 
             # Invoice reference(s): the reconciled customer invoice name(s),
