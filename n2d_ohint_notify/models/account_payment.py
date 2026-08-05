@@ -41,7 +41,9 @@ class AccountPayment(models.Model):
                 names = [n for n in pay.reconciled_invoice_ids.mapped("name") if n]
                 invoice_ref = ", ".join(names)
             if not invoice_ref:
-                invoice_ref = pay.ref or ""
+                # Odoo 18+/19 renamed account.payment.ref → memo; getattr with a
+                # default absorbs the AttributeError on whichever name is absent.
+                invoice_ref = getattr(pay, "memo", None) or getattr(pay, "ref", None) or ""
 
             # "How they paid": the journal name (Cash / Bank / …) is the most
             # user-meaningful label — the payment method line is usually the
