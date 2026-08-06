@@ -51,6 +51,12 @@ class AccountPayment(models.Model):
             # unnamed.
             method = (pay.journal_id.name or pay.payment_method_line_id.name or "")
 
+            # Payment (accounting) date. On Odoo 18+/19 `date` isn't a stored
+            # column on account.payment (it lives on the journal entry), so fall
+            # back to move_id.date; getattr absorbs the field-name differences.
+            pdate = getattr(pay, "date", None) or (pay.move_id.date if pay.move_id else None)
+            payment_date = str(pdate) if pdate else ""
+
             dispatcher._dispatch_event({
                 "event": "payment.received",
                 "partner_odoo_id": pay.partner_id.id,
@@ -59,6 +65,7 @@ class AccountPayment(models.Model):
                 "currency": pay.currency_id.name or "",
                 "method": method,
                 "invoice_ref": invoice_ref,
+                "payment_date": payment_date,
                 "dedupe_key": "payment.received:%s" % pay.id,
             })
 
