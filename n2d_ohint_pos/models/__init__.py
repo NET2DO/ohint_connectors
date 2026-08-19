@@ -6,3 +6,4 @@ from . import pos_payment_method
 from . import res_partner
 from . import stock_quant
 from . import pos_category
+from . import pos_config

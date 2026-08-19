@@ -10,8 +10,11 @@
                "the eligibility flag for delivery/collection contractors. "
                "Amendment B: emits event=stock.changed on stock.quant writes so "
                "branches see warehouse on-hand changes, which the catalog path "
-               "cannot carry (a quant write never touches product.template).",
-    "version": "17.0.1.3.0",
+               "cannot carry (a quant write never touches product.template). "
+               "Also refuses a pos.config the OHINT subscription has no branch "
+               "capacity for, so a till that could never be enrolled is never "
+               "created (fail-open when the middleware is unreachable).",
+    "version": "17.0.1.4.0",
     "license": "LGPL-3",
     "author": "N2D",
     "category": "Point of Sale",
