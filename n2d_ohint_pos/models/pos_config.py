@@ -26,7 +26,7 @@ import time
 
 import requests
 
-from odoo import _, api, models
+from odoo import SUPERUSER_ID, _, api, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -40,6 +40,13 @@ _ALLOWANCE_TIMEOUT = 6
 # see its own reservation and lock the middleware out of provisioning.
 _MIDDLEWARE_BOT_LOGIN = "ohint_pos_bot"
 
+# Set by the middleware on the create it makes itself, for tenants where it
+# connects as something other than the bot (an integration admin). Not a
+# security boundary — this guard is advisory and fails open by design; the
+# limit that actually decides anything is enforced server-side, where an
+# unmirrored config gets no branch and therefore no till.
+_PROVISIONING_CTX = "ohint_provisioning"
+
 
 class PosConfig(models.Model):
     _inherit = "pos.config"
@@ -51,6 +58,13 @@ class PosConfig(models.Model):
 
     @api.model
     def _ohint_is_middleware_user(self):
+        if self.env.context.get(_PROVISIONING_CTX):
+            return True
+        # Installing point_of_sale creates the default "Shop" config as root.
+        # Refusing that would fail the module install itself — and an install
+        # is not a user adding a till.
+        if self.env.uid == SUPERUSER_ID:
+            return True
         if self.env.user.login == _MIDDLEWARE_BOT_LOGIN:
             return True
         integration_uid = (
