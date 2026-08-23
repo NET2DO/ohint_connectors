@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+         <record id="view_users_form_custom_device_id" model="ir.ui.view">
+            <field name="name">res.users.form.device.id</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//notebook" position="inside">
+                    <page name="mobile device" string="Mobile Device">
+                        <group>
+                            <group>
+                                <field name="device_id"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
