@@ -52,11 +52,7 @@ class OhintConnect(http.Controller):
             _logger.warning(
                 "OHINT Connect REJECTED (%s) db=%s remote=%s", err, request.db, remote
             )
-            return request.render(
-                "web.http_error",
-                {"status_code": "403", "status_message": "This sign-in link is not valid."},
-                status=403,
-            )
+            return self._refuse("This sign-in link is not valid.")
 
         user = request.env["res.users"].sudo().browse(uid)
 
@@ -72,11 +68,7 @@ class OhintConnect(http.Controller):
                 "OHINT Connect REPLAY blocked jti=%s db=%s operator=%s remote=%s",
                 jti, request.db, operator, remote,
             )
-            return request.render(
-                "web.http_error",
-                {"status_code": "403", "status_message": "This sign-in link has already been used."},
-                status=403,
-            )
+            return self._refuse("This sign-in link has already been used.")
 
         # Establish the session without a password. finalize() is Odoo's own
         # post-MFA path: it stamps db/login/uid/context and the session token.
@@ -90,6 +82,32 @@ class OhintConnect(http.Controller):
             request.db, user.login, user.id, operator, remote,
         )
         return request.redirect("/odoo")
+
+    def _refuse(self, message):
+        """Plain 403.
+
+        Deliberately not a QWeb template: this path must work even when the
+        database's assets or views are in a bad state, which is exactly when a
+        rescue sign-in is most likely to be attempted. The 18.0 port rendered
+        web.http_error, which exists in no Odoo version, so every rejection
+        became a 500.
+        """
+        html = (
+            "<!doctype html><html><head><meta charset='utf-8'>"
+            "<title>Sign-in link rejected</title></head>"
+            "<body style=\"font-family:system-ui,sans-serif;max-width:32rem;"
+            "margin:4rem auto;padding:0 1rem;color:#222\">"
+            "<h1 style='font-size:1.25rem'>Sign-in link rejected</h1>"
+            f"<p>{message}</p>"
+            "<p style='color:#666;font-size:.9rem'>Connect links are valid once "
+            "and for a short time. Generate a new one from the OHINT console.</p>"
+            "</body></html>"
+        )
+        return request.make_response(
+            html,
+            status=403,
+            headers=[("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "no-store")],
+        )
 
     def _verify(self, token):
         """Return (uid, operator, jti) or raise _TicketError."""
