@@ -41,3 +41,22 @@ class TestActivityEmployee(TransactionCase):
              ("activity_type_id", "=", nxt_type.id)])
         self.assertEqual(len(nxt), 1)
         self.assertEqual(nxt.ohint_employee_id, self.no_user)
+
+    def test_the_schedule_dialog_assigns_the_employee(self):
+        wiz = self.env["mail.activity.schedule"].with_context(
+            active_model="res.partner", active_ids=[self.partner.id]).create({
+                "res_model": "res.partner", "res_ids": str([self.partner.id]),
+                "activity_type_id": self.call.id, "ohint_employee_id": self.no_user.id,
+            })
+        wiz.action_schedule_activities()
+        act = self.partner.activity_ids.filtered(lambda a: a.ohint_employee_id == self.no_user)
+        self.assertEqual(len(act), 1)
+
+    def test_the_schedule_dialog_without_employee_is_unchanged(self):
+        wiz = self.env["mail.activity.schedule"].with_context(
+            active_model="res.partner", active_ids=[self.partner.id]).create({
+                "res_model": "res.partner", "res_ids": str([self.partner.id]),
+                "activity_type_id": self.call.id,
+            })
+        wiz.action_schedule_activities()
+        self.assertFalse(self.partner.activity_ids.ohint_employee_id)

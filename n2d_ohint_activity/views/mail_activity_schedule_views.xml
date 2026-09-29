@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Schedule Activity dialog (chatter "Activities" button) -->
+    <record id="mail_activity_schedule_view_form_ohint_employee" model="ir.ui.view">
+        <field name="name">mail.activity.schedule.form.ohint.employee</field>
+        <field name="model">mail.activity.schedule</field>
+        <field name="inherit_id" ref="mail.mail_activity_schedule_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='activity_user_id']" position="after">
+                <field name="ohint_employee_id" options="{'no_create': True}" invisible="plan_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
