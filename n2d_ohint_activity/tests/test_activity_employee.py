@@ -60,3 +60,35 @@ class TestActivityEmployee(TransactionCase):
             })
         wiz.action_schedule_activities()
         self.assertFalse(self.partner.activity_ids.ohint_employee_id)
+
+    def test_integration_reads_and_acts_on_a_private_task_activity(self):
+        """A task without a project is private: only its assignee can read
+        it. The integration methods still reach its activities."""
+        if "project.task" not in self.env:
+            self.skipTest("project is not installed")
+        worker = self.env["res.users"].create({"name": "Worker", "login": "worker.ohint", "groups_id": [(6, 0, [
+            self.env.ref("base.group_user").id, self.env.ref("project.group_project_user").id])]})
+        task = self.env["project.task"].with_user(worker).create({"name": "Private to-do", "user_ids": [(6, 0, [worker.id])]})
+        act = task.with_user(worker).activity_schedule(activity_type_id=self.call.id, ohint_employee_id=self.no_user.id)
+        admin = self.env.ref("base.user_admin")
+        A = self.env["mail.activity"].with_user(admin)
+        rows = A.ohint_search_read([("ohint_employee_id", "=", self.no_user.id)], ["id", "res_model"])
+        self.assertIn(act.id, [r["id"] for r in rows])
+        self.assertEqual(A.ohint_search_count([("id", "=", act.id)]), 1)
+        new_ids = A.ohint_schedule("project.task", task.id, {"activity_type_id": self.call.id, "ohint_employee_id": self.no_user.id})
+        self.assertEqual(len(new_ids), 1)
+        att = A.ohint_create_attachment("project.task", task.id, "photo.txt", "aGk=")
+        A.browse(act.id).ohint_feedback(feedback="done", attachment_ids=[att])
+        self.assertFalse(self.env["mail.activity"].search([("id", "=", act.id)]))
+
+    def test_only_the_integration_account_may_call(self):
+        plain = self.env["res.users"].create({"name": "Plain", "login": "plain.ohint"})
+        from odoo.exceptions import AccessError
+        with self.assertRaises(AccessError):
+            self.env["mail.activity"].with_user(plain).ohint_search_read([], ["id"])
+
+    def test_the_app_can_only_edit_date_summary_and_note(self):
+        act = self.partner.activity_schedule(activity_type_id=self.call.id, ohint_employee_id=self.no_user.id)
+        from odoo.exceptions import AccessError
+        with self.assertRaises(AccessError):
+            act.with_user(self.env.ref("base.user_admin")).ohint_write({"user_id": self.user.id})
