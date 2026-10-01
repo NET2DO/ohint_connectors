@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ohint_activity_report_view_list" model="ir.ui.view">
+        <field name="name">ohint.activity.report.list</field>
+        <field name="model">ohint.activity.report</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0"
+                  decoration-danger="state == 'overdue'" decoration-warning="state == 'today'"
+                  decoration-success="state == 'done'" decoration-muted="state == 'planned'">
+                <field name="activity_type_id"/>
+                <field name="summary"/>
+                <field name="scheduler_id" widget="many2one_avatar_user"/>
+                <field name="employee_id" widget="many2one_avatar_employee"/>
+                <field name="user_id" optional="hide"/>
+                <field name="by_employee_field" optional="hide"/>
+                <field name="res_model_id"/>
+                <field name="source_module_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state == 'overdue'" decoration-warning="state == 'today'"
+                       decoration-success="state == 'done'" decoration-info="state == 'planned'"/>
+                <field name="date_deadline"/>
+                <field name="date_done" optional="show"/>
+                <field name="done_by_id" optional="hide"/>
+                <field name="res_name" string="Related Record"/>
+                <field name="res_model" column_invisible="True"/>
+                <field name="res_id" column_invisible="True"/>
+                <button name="action_open_record" type="object" icon="fa-external-link"
+                        title="Open the related record" invisible="not res_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ohint_activity_report_view_pivot" model="ir.ui.view">
+        <field name="name">ohint.activity.report.pivot</field>
+        <field name="model">ohint.activity.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Activities per employee" disable_linking="0" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="ohint_activity_report_view_graph" model="ir.ui.view">
+        <field name="name">ohint.activity.report.graph</field>
+        <field name="model">ohint.activity.report</field>
+        <field name="arch" type="xml">
+            <graph string="Activities per employee" type="bar" stacked="1" sample="1">
+                <field name="employee_id"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="ohint_activity_report_view_search" model="ir.ui.view">
+        <field name="name">ohint.activity.report.search</field>
+        <field name="model">ohint.activity.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="scheduler_id"/>
+                <field name="user_id"/>
+                <field name="res_model_id"/>
+                <field name="source_module_id"/>
+                <field name="activity_type_id"/>
+                <field name="summary"/>
+                <field name="res_name"/>
+                <filter string="Overdue" name="overdue" domain="[('state', '=', 'overdue')]"/>
+                <filter string="Today" name="today" domain="[('state', '=', 'today')]"/>
+                <filter string="Planned" name="planned" domain="[('state', '=', 'planned')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="Open" name="open" domain="[('state', '!=', 'done')]"/>
+                <separator/>
+                <filter string="Via 'Assign to employee'" name="by_employee_field" domain="[('by_employee_field', '=', True)]"/>
+                <filter string="Employee without a user" name="no_user"
+                        domain="[('employee_id', '!=', False), ('employee_id.user_id', '=', False)]"/>
+                <filter string="My activities" name="mine"
+                        domain="['|', ('user_id', '=', uid), ('employee_id.user_id', '=', uid)]"/>
+                <filter string="Scheduled by me" name="scheduled_by_me" domain="[('scheduler_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Date" name="filter_activity_date" date="activity_date"/>
+                <filter string="Due Date" name="filter_date_deadline" date="date_deadline"/>
+                <filter string="Done Date" name="filter_date_done" date="date_done"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Created by" name="group_scheduler" context="{'group_by': 'scheduler_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Source Module" name="group_module" context="{'group_by': 'source_module_id'}"/>
+                    <filter string="Source" name="group_model" context="{'group_by': 'res_model_id'}"/>
+                    <filter string="Activity Type" name="group_type" context="{'group_by': 'activity_type_id'}"/>
+                    <filter string="Due Date" name="group_deadline" context="{'group_by': 'date_deadline:month'}"/>
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ohint_activity_dashboard" model="ir.actions.act_window">
+        <field name="name">Activities</field>
+        <field name="res_model">ohint.activity.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="search_view_id" ref="ohint_activity_report_view_search"/>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No activities yet</p>
+            <p>Every activity scheduled in Odoo appears here, including those assigned to employees without an Odoo user.</p>
+        </field>
+    </record>
+
+    <record id="action_ohint_activity_per_employee" model="ir.actions.act_window">
+        <field name="name">Activities per Employee</field>
+        <field name="res_model">ohint.activity.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="ohint_activity_report_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No activities yet</p>
+            <p>One row per employee with their Overdue, Today, Planned and Done activities.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_activity_dashboard_root" name="Activities Dashboard"
+              web_icon="n2d_ohint_activity,static/description/icon.png"
+              groups="group_activity_dashboard" sequence="95"/>
+    <menuitem id="menu_activity_dashboard_list" name="Activities" parent="menu_activity_dashboard_root"
+              action="action_ohint_activity_dashboard" sequence="10"/>
+    <menuitem id="menu_activity_dashboard_employee" name="Per Employee" parent="menu_activity_dashboard_root"
+              action="action_ohint_activity_per_employee" sequence="20"/>
+</odoo>

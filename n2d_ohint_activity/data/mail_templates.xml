@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Credit the employee, not the assigned user. For an employee without
+         a user, the assigned user is whoever scheduled the activity, so
+         Odoo's "(originally assigned to <user>)" named the scheduler. -->
+    <template id="message_activity_done_ohint_employee" inherit_id="mail.message_activity_done">
+        <xpath expr="//t[@t-if='display_assignee']" position="after">
+            <t t-if="activity.ohint_employee_id"> (assigned to <span t-out="activity.sudo().ohint_employee_id.name"/>)</t>
+        </xpath>
+        <xpath expr="//t[@t-if='display_assignee']" position="attributes">
+            <attribute name="t-if">display_assignee and not activity.ohint_employee_id</attribute>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ohint_activity_report,ohint.activity.report,model_ohint_activity_report,group_activity_dashboard,1,0,0,0
+access_ohint_activity_done,ohint.activity.done,model_ohint_activity_done,group_activity_dashboard,1,0,0,0
